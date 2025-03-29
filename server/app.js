@@ -10,11 +10,13 @@ const AppError = require('./utils/AppError')
 const router = require('./routers');
 const logger = require("./logger");
 const morgan = require("morgan");
+const cors = require('cors');
 const connectDB = require('./config/dbConfig');
 
 const morganFormat = ":method :url :status :response-time ms";
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 app.use(
   morgan(morganFormat, {
