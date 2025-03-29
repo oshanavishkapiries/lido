@@ -1,0 +1,4 @@
+node_modules/
+.env
+*.log
+/src/utils/google-vision/service-account-key.json
