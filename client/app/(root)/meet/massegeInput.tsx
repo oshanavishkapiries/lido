@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { COLORS } from "@/constants/colors";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
@@ -33,7 +32,7 @@ const MassegeInput = () => {
       <motion.div
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
-        className={`flex items-center flex-1 h-[70px] border rounded-lg bg-gray-100 dark:bg-[${COLORS.background}] px-4`}
+        className={`flex items-center flex-1 h-[70px] border rounded-lg bg-background px-4`}
       >
         <motion.input
           type="text"

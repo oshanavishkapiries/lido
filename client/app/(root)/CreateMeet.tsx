@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { COLORS } from "@/constants/colors";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 
@@ -65,7 +64,7 @@ export default function CreateMeet({
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className={`bg-white dark:bg-[${COLORS.background}]`}>
+      <DialogContent className={`bg-background`}>
         <div className="flex flex-col items-center gap-2">
           <div
             className="flex size-11 shrink-0 items-center justify-center rounded-full border"

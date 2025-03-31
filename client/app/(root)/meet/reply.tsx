@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { COLORS } from "@/constants/colors";
 
 interface ReplyElementProps {
   message: string;
@@ -21,7 +20,7 @@ const ReplyElement: React.FC<ReplyElementProps> = ({
       className="w-full px-4 py-1"
     >
       <motion.div
-        className={`w-full rounded-lg bg-gray-100 dark:bg-[${COLORS.background}] p-4`}
+        className={`w-full rounded-lg bg-background p-4`}
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.2 }}

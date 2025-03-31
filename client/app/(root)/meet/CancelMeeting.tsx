@@ -9,7 +9,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { COLORS } from "@/constants/colors";
 import { useRouter } from "next/navigation";
 
 export default function CancelMeeting({
@@ -22,7 +21,7 @@ export default function CancelMeeting({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent className={`bg-white dark:bg-[${COLORS.background}]`}>
+      <AlertDialogContent className={`bg-background`}>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -32,7 +31,7 @@ export default function CancelMeeting({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={() => router.push("/")}>
-            Okay
+            End
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

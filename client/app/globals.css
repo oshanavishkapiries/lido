@@ -1,8 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
-@custom-variant dark (&:is(.dark *));
 
+@custom-variant dark (&:is(.dark *));
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -76,10 +76,13 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  
+  --color-primary: oklch(0.87 0.29 142.64);
+  --color-secondary: oklch(0.82 0.18 113.21);
 }
 
 .dark {
-  --background: oklch(0deg 0% 7.45%);
+  --background: oklch(0.22 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -136,6 +139,14 @@
 .animate-gradient {
   background-size: 200% auto;
   animation: gradient 8s ease infinite;
+}
+
+.gradient-primary {
+  background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+}
+
+.gradient-secondary {
+  background: linear-gradient(to right, var(--color-secondary), var(--color-primary));
 }
 
 /* bg-gradient-to-r ${COLORS.gradients.secondary} text-transparent bg-clip-text animate-gradient */

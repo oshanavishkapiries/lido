@@ -12,7 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { COLORS } from "@/constants/colors";
 import MassegeInput from "../massegeInput";
 import ReplyElement from "../reply";
 import { useMessageStore } from "@/store/useMessage";
@@ -35,7 +34,7 @@ const MeetPage = () => {
   return (
     <div className="min-h-screen flex flex-col w-full">
       <header
-        className={`p-4 flex justify-between items-center w-full sticky top-0 z-50 border-b bg-white dark:bg-[${COLORS.background}]`}
+        className={`p-4 flex justify-between items-center w-full sticky top-0 z-50 border-b bg-background`}
       >
         <div className="w-full max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -94,7 +93,7 @@ const MeetPage = () => {
                 variant="default"
                 className="lg:px-10 lg:py-2 px-4 py-2 rounded-md bg-red-500 hover:bg-red-700 text-white"
               >
-                Cancel
+                End
               </Button>
             </CancelMeeting>
           </div>
@@ -112,7 +111,6 @@ const MeetPage = () => {
                 width={100}
                 height={100}
               />
-              <p className="text-muted-foreground">Start the conversation</p>
             </div>
           ) : (
             <div className="flex flex-col-reverse gap-2">
