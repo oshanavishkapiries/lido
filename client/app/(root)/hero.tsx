@@ -11,14 +11,16 @@ const Hero = () => {
         <Badge className="rounded-full py-1 px-3 border-none">
           Just released v1.0.0
         </Badge>
-        <h1 className="mt-4 text-4xl sm:text-5xl md:text-6xl font-bold !leading-[1.2] tracking-tight">
+        <h1 className="mt-4 text-4xl sm:text-5xl md:text-6xl font-bold !leading-[1.2] tracking-tight jost-bold">
           Make Your Meeting More Interactive
         </h1>
-        <p className="mt-6 text-[17px] md:text-lg">
+
+        <p className="mt-6 text-sm md:text-base">
           Engage your participants with word clouds
           <br />
           whether you meet in the office, online or in-between.
         </p>
+
         <div className="mt-6 w-full max-w-sm relative mx-auto">
           <FormComponent />
         </div>

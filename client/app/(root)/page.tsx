@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
 import { Toaster } from "sonner";
 import Hero from "./hero";
+import CreateMeet from "./CreateMeet";
 
 export default function Home() {
   return (
@@ -12,7 +13,13 @@ export default function Home() {
       {/* Header */}
       <header className="p-4 flex justify-between items-center fixed top-0 z-50 w-full max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
-          <Image src="/logo/LIDO.png" alt="logo" width={70} height={30} className="" />
+          <Image
+            src="/logo/LIDO.png"
+            alt="logo"
+            width={70}
+            height={30}
+            className=""
+          />
         </div>
 
         <div className="flex items-center gap-2">
@@ -29,9 +36,11 @@ export default function Home() {
             <Github className="w-4 h-4" />
           </Button>
           <ModeToggle />
-          <Button variant="default" className="hover:bg-gray-100">
-            CREATE +
-          </Button>
+          <CreateMeet>
+            <Button variant="default" className="hover:bg-gray-100">
+              CREATE +
+            </Button>
+          </CreateMeet>
         </div>
       </header>
 

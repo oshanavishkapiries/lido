@@ -63,7 +63,7 @@ const FormComponent = () => {
                 <Input
                   placeholder="Enter your code"
                   {...field}
-                  className="focus-visible:ring-[#01FF0E]"
+                  className="focus-visible:ring-[#01FF0E] p-6"
                   disabled={isLoading}
                 />
               </FormControl>
@@ -73,7 +73,7 @@ const FormComponent = () => {
         />
         <Button
           type="submit"
-          className={`bg-primary px-6 py-1 hover:opacity-90 absolute right-0`}
+          className={`bg-primary px-6 py-1 hover:opacity-90 absolute right-2 top-[8px]`}
           disabled={isLoading}
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "JOIN"}
