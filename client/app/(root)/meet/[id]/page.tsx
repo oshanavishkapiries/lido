@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,17 +19,34 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import CancelMeeting from "../CancelMeeting";
-
+import { getSessionById } from "@/api/getSessionById";
+import useSession from "@/store/useSession";
+import { useRouter } from "next/navigation";
 const MeetPage = () => {
   const params = useParams();
   const meetingId = params.id as string;
+  const { getSession, setSession } = useSession();
+  const session = getSession(meetingId);
+  const router = useRouter();
   const messages = useMessageStore((state) => state.messages);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const sessionData = await getSessionById(meetingId);
+      if (sessionData.status !== "success" || !sessionData.data.isActive) {
+        toast.error("Session not found");
+        router.push("/");
+        return;
+      }
+      setSession(sessionData.data);
+    };
+    fetchSession();
+  }, [meetingId, setSession, router]);
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(meetingId);
     toast.success("Meeting ID copied to clipboard!");
   };
-
 
   return (
     <div className="min-h-screen flex flex-col w-full">
@@ -43,9 +60,9 @@ const MeetPage = () => {
 
           <div className="hidden md:flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <AvatarComponent name="John Doe" />
+              <AvatarComponent name={session?.sessionName} />
               <div className="flex flex-row items-center gap-2">
-                <p className="text-sm font-medium">John Doe</p>
+                <p className="text-sm font-medium">{session?.sessionName}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 bg-secondary px-3 py-1.5 rounded-md">
@@ -66,12 +83,14 @@ const MeetPage = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                    <AvatarComponent name="John Doe" />
+                    <AvatarComponent name={session?.sessionName} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem className="flex flex-col items-start gap-1">
-                    <span className="text-sm font-medium">John Doe</span>
+                    <span className="text-sm font-medium">
+                      {session?.sessionName}
+                    </span>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span>ID: {meetingId}</span>
                       <Button
@@ -88,7 +107,7 @@ const MeetPage = () => {
               </DropdownMenu>
             </div>
             <ModeToggle />
-            <CancelMeeting>
+            <CancelMeeting meetingId={meetingId}>
               <Button
                 variant="default"
                 className="lg:px-10 lg:py-2 px-4 py-2 rounded-md bg-red-500 hover:bg-red-700 text-white"

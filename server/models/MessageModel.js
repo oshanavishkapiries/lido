@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 // Session Schema
 const sessionSchema = new Schema({
-  hostName: { type: String, required: true },
+  sessionName: { type: String, required: true },
   sessionId: { type: String, required: true, unique: true },
   isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }

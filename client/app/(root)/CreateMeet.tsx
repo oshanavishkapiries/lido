@@ -72,10 +72,10 @@ export default function CreateMeet({
           </div>
           <DialogHeader>
             <DialogTitle className="sm:text-center">
-              Create a new meeting
+              Create a new session
             </DialogTitle>
             <DialogDescription className="sm:text-center">
-              Enter the details below to create a new meeting.
+              Enter the details below to create a new session.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -83,11 +83,11 @@ export default function CreateMeet({
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="*:not-first:mt-2">
-              <Label htmlFor={`${id}-name`}>Full name</Label>
+              <Label htmlFor={`${id}-name`}>Session name</Label>
               <Input
                 id={`${id}-name`}
                 name="name"
-                placeholder="Matt Welsh"
+                placeholder="Enter session name"
                 type="text"
                 required
                 value={formData.name}
