@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
+import createSession from "@/api/createSession";
+import { toast } from "sonner";
 
 export default function CreateMeet({
   children,
@@ -32,20 +34,16 @@ export default function CreateMeet({
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await createSession(formData.name);
 
-      // Log the form data
-      console.log("Form submitted with details:", formData);
+      if (response.status !== "success") {
+        toast.error("Failed to create session");
+        return;
+      }
 
-      // Simulate successful API response
-      const response = {
-        success: true,
-        meetId: "123",
-      };
+      const { sessionId } = response.data;
 
-      // Redirect to the meet page
-      router.push(`/meet/${response.meetId}`);
+      router.push(`/meet/${sessionId}`);
     } catch (error) {
       console.error("Error creating meeting:", error);
     } finally {
