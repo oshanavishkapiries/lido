@@ -16,23 +16,25 @@ const connectDB = require('./config/dbConfig');
 const morganFormat = ":method :url :status :response-time ms";
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
-app.use(
-  morgan(morganFormat, {
+app.use(morgan(morganFormat, {
     stream: {
-      write: (message) => {
-        const logObject = {
-          method: message.split(" ")[0],
-          url: message.split(" ")[1],
-          status: message.split(" ")[2],
-          responseTime: message.split(" ")[3],
-        };
-        logger.info(JSON.stringify(logObject));
-      },
+        write: (message) => {
+            const logObject = {
+                method: message.split(" ")[0],
+                url: message.split(" ")[1],
+                status: message.split(" ")[2],
+                responseTime: message.split(" ")[3],
+            };
+            logger.info(JSON.stringify(logObject));
+        },
     },
-  })
-);
+}));
 
 // Routes
 app.use('/api/v1/', router);
@@ -42,7 +44,7 @@ connectDB();
 
 // 404 Route Handler
 app.all('*', (req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 // Error Handling Middleware
@@ -50,5 +52,5 @@ app.use(errorHandler);
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running on PORT:${port}`);
+    console.log(`Server is running on PORT:${port}`);
 });

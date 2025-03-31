@@ -16,11 +16,14 @@ import {
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { getSessionById } from "@/api/getSessionById";
+import { useRouter } from "next/navigation";
 
 type JoinFormValues = z.infer<typeof joinFormSchema>;
 
 const FormComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<JoinFormValues>({
     resolver: zodResolver(joinFormSchema),
@@ -32,13 +35,14 @@ const FormComponent = () => {
   async function onSubmit(data: JoinFormValues) {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      console.log("Joining meeting with code:", data.code);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      const session = await getSessionById(data.code);
 
-      toast.success("Successfully joined meeting!", {
-        duration: 3000,
-      });
+      if (session.status !== "success" || session?.data?.isActive === false || session?.data === null) {
+        toast.error("Invalid meeting code");
+        return;
+      }
+
+      router.push(`/meet/${data.code}`);
 
       form.reset();
     } catch (error) {

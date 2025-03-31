@@ -1,3 +1,5 @@
+"use client";
+import endSession from "@/api/endSession";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,13 +12,25 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import useSession from "@/store/useSession";
 
 export default function CancelMeeting({
   children,
+  meetingId,
 }: {
   children: React.ReactNode;
+  meetingId: string;
 }) {
   const router = useRouter();
+  const { getSession } = useSession();
+  const session = getSession(meetingId);
+
+  const handleEndSession = async () => {
+    if (session?.sessionId) {
+      await endSession(session.sessionId);
+      router.push("/");
+    }
+  };
 
   return (
     <AlertDialog>
@@ -30,9 +44,7 @@ export default function CancelMeeting({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => router.push("/")}>
-            End
-          </AlertDialogAction>
+          <AlertDialogAction onClick={handleEndSession}>End</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

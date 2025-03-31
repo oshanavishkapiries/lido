@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
+import createSession from "@/api/createSession";
+import { toast } from "sonner";
 
 export default function CreateMeet({
   children,
@@ -32,20 +34,16 @@ export default function CreateMeet({
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await createSession(formData.name);
 
-      // Log the form data
-      console.log("Form submitted with details:", formData);
+      if (response.status !== "success") {
+        toast.error("Failed to create session");
+        return;
+      }
 
-      // Simulate successful API response
-      const response = {
-        success: true,
-        meetId: "123",
-      };
+      const { sessionId } = response.data;
 
-      // Redirect to the meet page
-      router.push(`/meet/${response.meetId}`);
+      router.push(`/meet/${sessionId}`);
     } catch (error) {
       console.error("Error creating meeting:", error);
     } finally {
@@ -74,10 +72,10 @@ export default function CreateMeet({
           </div>
           <DialogHeader>
             <DialogTitle className="sm:text-center">
-              Create a new meeting
+              Create a new session
             </DialogTitle>
             <DialogDescription className="sm:text-center">
-              Enter the details below to create a new meeting.
+              Enter the details below to create a new session.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -85,11 +83,11 @@ export default function CreateMeet({
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="*:not-first:mt-2">
-              <Label htmlFor={`${id}-name`}>Full name</Label>
+              <Label htmlFor={`${id}-name`}>Session name</Label>
               <Input
                 id={`${id}-name`}
                 name="name"
-                placeholder="Matt Welsh"
+                placeholder="Enter session name"
                 type="text"
                 required
                 value={formData.name}
