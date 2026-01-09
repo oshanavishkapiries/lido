@@ -13,6 +13,7 @@ const router = require('./routers');
 const logger = require("./logger");
 const morgan = require("morgan");
 const cors = require('cors');
+const cookieParser = require('cookie-parser'); // NEW
 const connectDB = require('./config/dbConfig');
 const socketHandlers = require('./socketHandlers');
 
@@ -20,11 +21,13 @@ const morganFormat = ":method :url :status :response-time ms";
 
 // Middleware
 app.use(cors({
-    origin: '*',
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Updated for production
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true // NEW: Allow cookies
 }));
 app.use(express.json());
+app.use(cookieParser()); // NEW: Parse cookies
 app.use(morgan(morganFormat, {
     stream: {
         write: (message) => {
