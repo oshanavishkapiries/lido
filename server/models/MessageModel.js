@@ -5,18 +5,39 @@ const { Schema } = mongoose;
 const sessionSchema = new Schema({
   sessionName: { type: String, required: true },
   sessionId: { type: String, required: true, unique: true },
+  hostName: { type: String, required: true },
   isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
+  settings: {
+    allowAnonymous: { type: Boolean, default: true },
+    maxParticipants: { type: Number, default: 100 },
+    enablePolls: { type: Boolean, default: true },
+    enableQA: { type: Boolean, default: true },
+    enableReactions: { type: Boolean, default: true }
+  },
+  participants: [{
+    name: { type: String, required: true },
+    joinedAt: { type: Date, default: Date.now },
+    isActive: { type: Boolean, default: true },
+    lastSeen: { type: Date, default: Date.now }
+  }],
+  createdAt: { type: Date, default: Date.now },
+  endedAt: { type: Date }
 });
+
+// Add indexes for better query performance
+sessionSchema.index({ sessionId: 1 });
+sessionSchema.index({ isActive: 1 });
 
 const Session = mongoose.model('Session', sessionSchema);
 
-// User Schema
+// User Schema (kept for backward compatibility, but participants are now in Session)
 const userSchema = new Schema({
   sessionId: { type: String, required: true, ref: 'Session' },
   userName: { type: String, required: true },
   joinedAt: { type: Date, default: Date.now }
 });
+
+userSchema.index({ sessionId: 1 });
 
 const User = mongoose.model('User', userSchema);
 
@@ -25,9 +46,54 @@ const messageSchema = new Schema({
   sessionId: { type: String, required: true, ref: 'Session' },
   senderName: { type: String, required: true },
   content: { type: String, required: true },
+  type: {
+    type: String,
+    enum: ['message', 'question', 'announcement'],
+    default: 'message'
+  },
+  reactions: [{
+    emoji: { type: String, required: true },
+    users: [{ type: String }] // Array of usernames who reacted
+  }],
+  upvotes: {
+    count: { type: Number, default: 0 },
+    users: [{ type: String }] // Array of usernames who upvoted
+  },
+  isDeleted: { type: Boolean, default: false },
+  deletedBy: { type: String },
+  deletedAt: { type: Date },
   timestamp: { type: Date, default: Date.now }
 });
 
+// Add indexes for better query performance
+messageSchema.index({ sessionId: 1, timestamp: -1 });
+messageSchema.index({ isDeleted: 1 });
+
 const Message = mongoose.model('Message', messageSchema);
 
-module.exports = { Session, User, Message };
+// Poll Schema
+const pollSchema = new Schema({
+  sessionId: { type: String, required: true, ref: 'Session' },
+  question: { type: String, required: true },
+  options: [{
+    text: { type: String, required: true },
+    votes: [{
+      userName: { type: String, required: true },
+      votedAt: { type: Date, default: Date.now }
+    }]
+  }],
+  createdBy: { type: String, required: true },
+  isActive: { type: Boolean, default: true },
+  allowMultipleVotes: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  expiresAt: { type: Date },
+  closedAt: { type: Date }
+});
+
+// Add indexes
+pollSchema.index({ sessionId: 1, isActive: 1 });
+pollSchema.index({ expiresAt: 1 });
+
+const Poll = mongoose.model('Poll', pollSchema);
+
+module.exports = { Session, User, Message, Poll };

@@ -1,6 +1,8 @@
 require('dotenv').config();
 // src/app.js
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const app = express();
 const port = process.env.PORT || 3125;
 
@@ -12,6 +14,7 @@ const logger = require("./logger");
 const morgan = require("morgan");
 const cors = require('cors');
 const connectDB = require('./config/dbConfig');
+const socketHandlers = require('./socketHandlers');
 
 const morganFormat = ":method :url :status :response-time ms";
 
@@ -42,6 +45,20 @@ app.use('/api/v1/', router);
 // Connect to database
 connectDB();
 
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.io
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+// Setup socket handlers
+socketHandlers(io);
+
 // 404 Route Handler
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
@@ -51,6 +68,7 @@ app.all('*', (req, res, next) => {
 app.use(errorHandler);
 
 // Start the server
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server is running on PORT:${port}`);
+    logger.info(`Server started on port ${port}`);
 });
