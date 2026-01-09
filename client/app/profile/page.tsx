@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { motion } from 'framer-motion';
 import { User, Mail, LogOut, Calendar } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 function ProfileContent() {
@@ -35,7 +34,7 @@ function ProfileContent() {
             } else {
                 // toast.error('Failed to update profile');
             }
-        } catch (error) {
+        } catch {
             // toast.error('Failed to update profile');
         }
     };

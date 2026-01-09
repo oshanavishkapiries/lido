@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { motion } from 'framer-motion';
 import { Mail, Loader2, ArrowRight } from 'lucide-react';
-import { toast } from 'sonner';
 import Image from 'next/image';
 
 export default function LoginPage() {
@@ -18,7 +16,6 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [emailSent, setEmailSent] = useState(false);
     const { login } = useAuth();
-    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,7 +38,7 @@ export default function LoginPage() {
             await login(email, name || undefined);
             setEmailSent(true);
             // toast.success('Magic link sent! Check your email.');
-        } catch (error: any) {
+        } catch {
             // toast.error(error.message || 'Failed to send magic link');
         } finally {
             setIsLoading(false);
@@ -63,7 +60,7 @@ export default function LoginPage() {
                             </div>
                             <CardTitle className="text-2xl">Check Your Email!</CardTitle>
                             <CardDescription>
-                                We've sent a magic link to <strong>{email}</strong>
+                                We&apos;ve sent a magic link to <strong>{email}</strong>
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">

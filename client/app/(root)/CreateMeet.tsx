@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import createSession from "@/api/createSession";
-import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext"; // NEW
 
 export default function CreateMeet({

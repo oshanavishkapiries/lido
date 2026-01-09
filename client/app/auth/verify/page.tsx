@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
-export default function VerifyPage() {
-    const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
-    const [errorMessage, setErrorMessage] = useState('');
-    const searchParams = useSearchParams();
+function VerifyContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { refreshUser } = useAuth();
+    const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3125/api/v1';
 
@@ -26,36 +26,36 @@ export default function VerifyPage() {
             return;
         }
 
-        verifyToken(token);
-    }, [searchParams]);
+        const verifyToken = async (token: string) => {
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/verify/${token}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
 
-    const verifyToken = async (token: string) => {
-        try {
-            const response = await fetch(`${BACKEND_URL}/auth/verify/${token}`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+                const data = await response.json();
 
-            const data = await response.json();
-
-            if (response.ok) {
-                setStatus('success');
-                await refreshUser();
-                setTimeout(() => {
-                    router.push('/');
-                }, 2000);
-            } else {
+                if (response.ok) {
+                    setStatus('success');
+                    await refreshUser();
+                    setTimeout(() => {
+                        router.push('/');
+                    }, 2000);
+                } else {
+                    setStatus('error');
+                    setErrorMessage(data.message || 'Invalid or expired magic link');
+                }
+            } catch {
                 setStatus('error');
-                setErrorMessage(data.message || 'Invalid or expired magic link');
+                setErrorMessage('Failed to verify magic link');
             }
-        } catch (error) {
-            setStatus('error');
-            setErrorMessage('Failed to verify magic link');
-        }
-    };
+        };
+
+        verifyToken(token);
+    }, [searchParams, refreshUser, router, BACKEND_URL]);
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-background">
@@ -66,26 +66,26 @@ export default function VerifyPage() {
             >
                 <Card>
                     <CardContent className="pt-6">
-                        {status === 'verifying' && (
-                            <div className="text-center space-y-4">
-                                <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
-                                <CardTitle className="text-2xl">Verifying...</CardTitle>
+                        {status === 'loading' && (
+                            <div className="flex flex-col items-center space-y-4 py-8">
+                                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                                <CardTitle className="text-xl">
+                                    Verifying your magic link...
+                                </CardTitle>
                                 <CardDescription>
-                                    Please wait while we verify your magic link
+                                    Please wait while we log you in
                                 </CardDescription>
                             </div>
                         )}
 
                         {status === 'success' && (
-                            <div className="text-center space-y-4">
-                                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
-                                    <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
-                                </div>
-                                <CardTitle className="text-2xl text-green-600 dark:text-green-400">
+                            <div className="flex flex-col items-center space-y-4 py-8">
+                                <CheckCircle className="h-12 w-12 text-green-500" />
+                                <CardTitle className="text-xl">
                                     Success!
                                 </CardTitle>
                                 <CardDescription>
-                                    You've been logged in successfully
+                                    You&apos;ve been logged in successfully
                                 </CardDescription>
                                 <p className="text-sm text-muted-foreground">
                                     Redirecting you to the home page...
@@ -94,19 +94,19 @@ export default function VerifyPage() {
                         )}
 
                         {status === 'error' && (
-                            <div className="text-center space-y-4">
-                                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
-                                    <XCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
-                                </div>
-                                <CardTitle className="text-2xl text-red-600 dark:text-red-400">
+                            <div className="flex flex-col items-center space-y-4 py-8">
+                                <XCircle className="h-12 w-12 text-red-500" />
+                                <CardTitle className="text-xl">
                                     Verification Failed
                                 </CardTitle>
-                                <CardDescription>{errorMessage}</CardDescription>
+                                <CardDescription className="text-center">
+                                    {errorMessage}
+                                </CardDescription>
                                 <Button
                                     onClick={() => router.push('/login')}
                                     className="w-full"
                                 >
-                                    Try Again
+                                    Back to Login
                                 </Button>
                             </div>
                         )}
@@ -114,5 +114,17 @@ export default function VerifyPage() {
                 </Card>
             </motion.div>
         </div>
+    );
+}
+
+export default function VerifyPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+        }>
+            <VerifyContent />
+        </Suspense>
     );
 }

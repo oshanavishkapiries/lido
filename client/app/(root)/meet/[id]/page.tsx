@@ -3,7 +3,6 @@ import AvatarComponent from "@/components/AvatarComponent";
 import { ModeToggle } from "@/components/ModeToggle";
 import { Button } from "@/components/ui/button";
 import { Copy, Loader2, Share2 } from "lucide-react"; // Added Share2
-import { toast } from "sonner";
 import { Toaster } from "sonner";
 import React, { useEffect, useState, useRef } from "react";
 import {
@@ -33,7 +32,6 @@ import useSession from "@/store/useSession";
 import { useUserStore } from "@/store/useUserStore";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import { useParticipantStore } from "@/store/useParticipantStore";
-import { getMessages } from "@/api/getMessages";
 import ProfileDropdown from "@/components/ProfileDropdown"; // NEW
 
 const MeetPage = () => {
