@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export default function VerifyPage() {
     const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
@@ -32,7 +33,7 @@ export default function VerifyPage() {
         try {
             const response = await fetch(`${BACKEND_URL}/auth/verify/${token}`, {
                 method: 'GET',
-                credentials: 'include', // Include cookies
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -42,9 +43,7 @@ export default function VerifyPage() {
 
             if (response.ok) {
                 setStatus('success');
-                // Refresh user data in context
                 await refreshUser();
-                // Redirect to home after 2 seconds
                 setTimeout(() => {
                     router.push('/');
                 }, 2000);
@@ -59,58 +58,60 @@ export default function VerifyPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600 p-4">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center"
+                className="w-full max-w-md"
             >
-                {status === 'verifying' && (
-                    <>
-                        <Loader2 className="w-16 h-16 animate-spin text-purple-600 mx-auto mb-4" />
-                        <h1 className="text-2xl font-bold mb-2">Verifying...</h1>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Please wait while we verify your magic link
-                        </p>
-                    </>
-                )}
+                <Card>
+                    <CardContent className="pt-6">
+                        {status === 'verifying' && (
+                            <div className="text-center space-y-4">
+                                <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
+                                <CardTitle className="text-2xl">Verifying...</CardTitle>
+                                <CardDescription>
+                                    Please wait while we verify your magic link
+                                </CardDescription>
+                            </div>
+                        )}
 
-                {status === 'success' && (
-                    <>
-                        <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
-                        </div>
-                        <h1 className="text-3xl font-bold mb-2 text-green-600 dark:text-green-400">
-                            Success!
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400 mb-4">
-                            You've been logged in successfully
-                        </p>
-                        <p className="text-sm text-gray-500">
-                            Redirecting you to the home page...
-                        </p>
-                    </>
-                )}
+                        {status === 'success' && (
+                            <div className="text-center space-y-4">
+                                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
+                                    <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
+                                </div>
+                                <CardTitle className="text-2xl text-green-600 dark:text-green-400">
+                                    Success!
+                                </CardTitle>
+                                <CardDescription>
+                                    You've been logged in successfully
+                                </CardDescription>
+                                <p className="text-sm text-muted-foreground">
+                                    Redirecting you to the home page...
+                                </p>
+                            </div>
+                        )}
 
-                {status === 'error' && (
-                    <>
-                        <div className="w-20 h-20 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <XCircle className="w-12 h-12 text-red-600 dark:text-red-400" />
-                        </div>
-                        <h1 className="text-3xl font-bold mb-2 text-red-600 dark:text-red-400">
-                            Verification Failed
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">
-                            {errorMessage}
-                        </p>
-                        <Button
-                            onClick={() => router.push('/login')}
-                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-                        >
-                            Try Again
-                        </Button>
-                    </>
-                )}
+                        {status === 'error' && (
+                            <div className="text-center space-y-4">
+                                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto">
+                                    <XCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
+                                </div>
+                                <CardTitle className="text-2xl text-red-600 dark:text-red-400">
+                                    Verification Failed
+                                </CardTitle>
+                                <CardDescription>{errorMessage}</CardDescription>
+                                <Button
+                                    onClick={() => router.push('/login')}
+                                    className="w-full"
+                                >
+                                    Try Again
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </motion.div>
         </div>
     );

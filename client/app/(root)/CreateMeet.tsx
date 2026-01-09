@@ -90,36 +90,49 @@ export default function CreateMeet({
               {isAuthenticated ? (
                 `Creating as ${user?.name}`
               ) : (
-                "Please login to create a session"
+                "You need to be logged in to create a session"
               )}
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <form className="space-y-5" onSubmit={handleSubmit}>
+        {!isAuthenticated ? (
+          // Show login button if not authenticated
           <div className="space-y-4">
-            <div className="*:not-first:mt-2">
-              <Label htmlFor={`${id}-sessionName`}>Session name</Label>
-              <Input
-                id={`${id}-sessionName`}
-                name="sessionName"
-                placeholder="Enter session name"
-                type="text"
-                required
-                value={formData.sessionName}
-                onChange={handleChange}
-                disabled={isLoading || !isAuthenticated}
-              />
-            </div>
+            <Button
+              onClick={() => router.push('/login')}
+              className="w-full"
+            >
+              Login to Continue
+            </Button>
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading || !isAuthenticated}>
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              "Create +"
-            )}
-          </Button>
-        </form>
+        ) : (
+          // Show form if authenticated
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div className="*:not-first:mt-2">
+                <Label htmlFor={`${id}-sessionName`}>Session name</Label>
+                <Input
+                  id={`${id}-sessionName`}
+                  name="sessionName"
+                  placeholder="Enter session name"
+                  type="text"
+                  required
+                  value={formData.sessionName}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Create +"
+              )}
+            </Button>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -46,7 +46,7 @@ function ProfileContent() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-600 p-4">
+        <div className="min-h-screen bg-background p-4">
             <div className="max-w-2xl mx-auto pt-20">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -61,12 +61,12 @@ function ProfileContent() {
                             {/* User Info */}
                             <div className="space-y-4">
                                 <div className="flex items-center space-x-4">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-full flex items-center justify-center">
-                                        <User className="w-8 h-8 text-white" />
+                                    <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
+                                        <User className="w-8 h-8 text-primary-foreground" />
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-semibold">{user?.name}</h3>
-                                        <p className="text-sm text-gray-500">{user?.email}</p>
+                                        <p className="text-sm text-muted-foreground">{user?.email}</p>
                                     </div>
                                 </div>
 
@@ -105,7 +105,7 @@ function ProfileContent() {
                                         Email
                                     </label>
                                     <Input value={user?.email} disabled />
-                                    <p className="text-xs text-gray-500 mt-1">
+                                    <p className="text-xs text-muted-foreground mt-1">
                                         Email cannot be changed
                                     </p>
                                 </div>

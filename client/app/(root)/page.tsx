@@ -6,6 +6,7 @@ import { Github } from "lucide-react";
 import { Toaster } from "sonner";
 import Hero from "./hero";
 import CreateMeet from "./CreateMeet";
+import ProfileDropdown from "@/components/ProfileDropdown"; // NEW
 
 export default function Home() {
   return (
@@ -41,6 +42,7 @@ export default function Home() {
               CREATE +
             </Button>
           </CreateMeet>
+          <ProfileDropdown /> {/* NEW */}
         </div>
       </header>
 

@@ -53,7 +53,8 @@ export const createSocketEventHandlers = (
         console.error("Failed to load message history:", error);
       }
 
-      toast.success(`Welcome to the session, ${data.userName}!`);
+      // Removed annoying welcome toast
+      // toast.success(`Welcome to the session, ${data.userName}!`);
       onJoined?.();
     },
 

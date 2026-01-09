@@ -2,7 +2,7 @@
 import AvatarComponent from "@/components/AvatarComponent";
 import { ModeToggle } from "@/components/ModeToggle";
 import { Button } from "@/components/ui/button";
-import { Copy, Loader2 } from "lucide-react";
+import { Copy, Loader2, Share2 } from "lucide-react"; // Added Share2
 import { toast } from "sonner";
 import { Toaster } from "sonner";
 import React, { useEffect, useState, useRef } from "react";
@@ -34,6 +34,7 @@ import { useUserStore } from "@/store/useUserStore";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import { useParticipantStore } from "@/store/useParticipantStore";
 import { getMessages } from "@/api/getMessages";
+import ProfileDropdown from "@/components/ProfileDropdown"; // NEW
 
 const MeetPage = () => {
   const params = useParams();
@@ -132,8 +133,9 @@ const MeetPage = () => {
   };
 
   const handleCopyId = () => {
-    navigator.clipboard.writeText(meetingId);
-    toast.success("Meeting ID copied to clipboard!");
+    const shareLink = `${window.location.origin}/meet/${meetingId}`;
+    navigator.clipboard.writeText(shareLink);
+    toast.success("Meeting link copied to clipboard!");
   };
 
   if (isLoadingSession) {
@@ -159,7 +161,7 @@ const MeetPage = () => {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleNameSubmit} className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="userName">Your Name</Label>
               <Input
                 id="userName"
@@ -239,7 +241,16 @@ const MeetPage = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopyId}
+              title="Share Session"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
             <ModeToggle />
+            <ProfileDropdown />
             <CancelMeeting meetingId={meetingId}>
               <Button
                 variant="default"

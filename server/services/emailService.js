@@ -5,35 +5,6 @@ const logger = require('../logger');
  * Email Service for sending magic links
  */
 
-// Create transporter (configure based on your email provider)
-const createTransporter = () => {
-    // For development: Use Gmail or a test service like Ethereal
-    // For production: Use SendGrid, AWS SES, or your email provider
-
-    if (process.env.NODE_ENV === 'production') {
-        // Production email configuration
-        return nodemailer.createTransporter({
-            host: process.env.EMAIL_HOST,
-            port: process.env.EMAIL_PORT || 587,
-            secure: process.env.EMAIL_SECURE === 'true',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD
-            }
-        });
-    } else {
-        // Development: Use Gmail (requires app password)
-        // Or use Ethereal for testing: https://ethereal.email/
-        return nodemailer.createTransporter({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER || 'your-email@gmail.com',
-                pass: process.env.EMAIL_PASSWORD || 'your-app-password'
-            }
-        });
-    }
-};
-
 /**
  * Send magic link email
  * @param {string} email - Recipient email
@@ -42,7 +13,30 @@ const createTransporter = () => {
  */
 const sendMagicLinkEmail = async (email, name, magicLink) => {
     try {
-        const transporter = createTransporter();
+        // Create transporter
+        let transporter;
+
+        if (process.env.NODE_ENV === 'production') {
+            // Production email configuration
+            transporter = nodemailer.createTransport({
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT || 587,
+                secure: process.env.EMAIL_SECURE === 'true',
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASSWORD
+                }
+            });
+        } else {
+            // Development: Use Gmail (requires app password)
+            transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASSWORD
+                }
+            });
+        }
 
         const mailOptions = {
             from: process.env.EMAIL_FROM || '"LIDO" <noreply@lido.app>',
@@ -56,52 +50,53 @@ const sendMagicLinkEmail = async (email, name, magicLink) => {
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>LIDO Magic Link</title>
                 </head>
-                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-                        <h1 style="color: white; margin: 0; font-size: 32px;">LIDO</h1>
-                        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Interactive Sessions Made Easy</p>
+                <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                    <div style="background: #1a1a1a; padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+                        <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">LIDO.</h1>
+                        <p style="color: rgba(255,255,255,0.8); margin: 10px 0 0 0; font-size: 14px;">Interactive Sessions Made Easy</p>
                     </div>
                     
-                    <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-                        <h2 style="color: #333; margin-top: 0;">Hi ${name}! 👋</h2>
+                    <div style="background: #f8f8f8; padding: 40px 30px; border-radius: 0 0 12px 12px;">
+                        <h2 style="color: #1a1a1a; margin-top: 0; font-size: 24px; font-weight: 600;">Hi ${name}! 👋</h2>
                         
-                        <p style="font-size: 16px; color: #555;">
-                            Click the button below to log in to your LIDO account. This link will expire in <strong>15 minutes</strong>.
+                        <p style="font-size: 16px; color: #4a4a4a; line-height: 1.6;">
+                            Click the button below to securely log in to your LIDO account. This link will expire in <strong style="color: #1a1a1a;">15 minutes</strong>.
                         </p>
                         
-                        <div style="text-align: center; margin: 30px 0;">
+                        <div style="text-align: center; margin: 35px 0;">
                             <a href="${magicLink}" 
-                               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                      color: white; 
-                                      padding: 15px 40px; 
+                               style="background: #1a1a1a; 
+                                      color: #ffffff; 
+                                      padding: 16px 48px; 
                                       text-decoration: none; 
-                                      border-radius: 5px; 
+                                      border-radius: 8px; 
                                       font-size: 16px; 
-                                      font-weight: bold;
-                                      display: inline-block;">
+                                      font-weight: 600;
+                                      display: inline-block;
+                                      box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                                 🔐 Log In to LIDO
                             </a>
                         </div>
                         
-                        <p style="font-size: 14px; color: #777; margin-top: 30px;">
+                        <p style="font-size: 14px; color: #6a6a6a; margin-top: 35px;">
                             Or copy and paste this link into your browser:
                         </p>
-                        <p style="font-size: 12px; color: #999; word-break: break-all; background: white; padding: 10px; border-radius: 5px;">
+                        <p style="font-size: 13px; color: #8a8a8a; word-break: break-all; background: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid #e0e0e0;">
                             ${magicLink}
                         </p>
                         
-                        <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+                        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 35px 0;">
                         
-                        <p style="font-size: 12px; color: #999; margin: 0;">
+                        <p style="font-size: 13px; color: #8a8a8a; margin: 0; line-height: 1.5;">
                             If you didn't request this email, you can safely ignore it.
                         </p>
-                        <p style="font-size: 12px; color: #999; margin: 5px 0 0 0;">
+                        <p style="font-size: 13px; color: #8a8a8a; margin: 8px 0 0 0; line-height: 1.5;">
                             This link will expire in 15 minutes for security reasons.
                         </p>
                     </div>
                     
-                    <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
-                        <p>© ${new Date().getFullYear()} LIDO. All rights reserved.</p>
+                    <div style="text-align: center; margin-top: 24px; color: #999; font-size: 12px;">
+                        <p style="margin: 0;">© ${new Date().getFullYear()} LIDO. All rights reserved.</p>
                     </div>
                 </body>
                 </html>
