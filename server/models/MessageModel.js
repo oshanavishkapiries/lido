@@ -6,6 +6,8 @@ const sessionSchema = new Schema({
   sessionName: { type: String, required: true },
   sessionId: { type: String, required: true, unique: true },
   hostName: { type: String, required: true },
+  hostId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // NEW: Reference to User
+  hostEmail: { type: String, required: true }, // NEW: Host email for quick access
   isActive: { type: Boolean, default: true },
   settings: {
     allowAnonymous: { type: Boolean, default: true },
@@ -15,7 +17,9 @@ const sessionSchema = new Schema({
     enableReactions: { type: Boolean, default: true }
   },
   participants: [{
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // NEW: null for guests
     name: { type: String, required: true },
+    email: { type: String }, // NEW: null for guests
     joinedAt: { type: Date, default: Date.now },
     isActive: { type: Boolean, default: true },
     lastSeen: { type: Date, default: Date.now }

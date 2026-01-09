@@ -24,11 +24,15 @@
   "homepage": "https://github.com/oshanavishkapiries/lido#readme",
   "description": "",
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.13.1",
     "morgan": "^1.10.0",
+    "nodemailer": "^7.0.12",
     "socket.io": "^4.8.3",
     "uuid": "^13.0.0",
     "winston": "^3.17.0"
