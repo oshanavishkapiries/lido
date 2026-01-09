@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
@@ -14,10 +14,16 @@ function VerifyContent() {
     const { refreshUser } = useAuth();
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [errorMessage, setErrorMessage] = useState('');
+    const hasVerified = useRef(false); // Prevent double verification
 
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3125/api/v1';
 
     useEffect(() => {
+        // Prevent double execution in React StrictMode
+        if (hasVerified.current) {
+            return;
+        }
+
         const token = searchParams.get('token');
 
         if (!token) {
@@ -27,6 +33,8 @@ function VerifyContent() {
         }
 
         const verifyToken = async (token: string) => {
+            hasVerified.current = true; // Mark as verified before making request
+
             try {
                 const response = await fetch(`${BACKEND_URL}/auth/verify/${token}`, {
                     method: 'GET',

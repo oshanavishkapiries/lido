@@ -42,14 +42,18 @@ const requestMagicLink = catchAsync(async (req, res, next) => {
     const token = generateMagicLinkToken();
     const hashedToken = hashToken(token);
 
+    logger.info(`Creating magic link - Token length: ${token.length}, Hashed: ${hashedToken.substring(0, 10)}...`);
+
     // Save magic link to database
-    await MagicLink.create({
+    const savedLink = await MagicLink.create({
         userId: user._id,
         email: user.email,
         token: hashedToken,
         expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
         used: false
     });
+
+    logger.info(`Magic link saved to DB - ID: ${savedLink._id}, Expires: ${savedLink.expiresAt}`);
 
     // Create magic link URL
     const magicLinkUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/verify?token=${token}`;
@@ -80,6 +84,8 @@ const verifyMagicLink = catchAsync(async (req, res, next) => {
     // Hash the token to compare with database
     const hashedToken = hashToken(token);
 
+    logger.info(`Verifying magic link - Token length: ${token.length}, Hashed: ${hashedToken.substring(0, 10)}...`);
+
     // Find magic link
     const magicLink = await MagicLink.findOne({
         token: hashedToken,
@@ -87,7 +93,16 @@ const verifyMagicLink = catchAsync(async (req, res, next) => {
         expiresAt: { $gt: new Date() }
     });
 
+    logger.info(`Magic link lookup result: ${magicLink ? 'Found' : 'Not found'}`);
+
     if (!magicLink) {
+        // Debug: Check if token exists at all
+        const anyToken = await MagicLink.findOne({ token: hashedToken });
+        if (anyToken) {
+            logger.warn(`Token found but: used=${anyToken.used}, expired=${anyToken.expiresAt < new Date()}`);
+        } else {
+            logger.warn(`No token found in database with hash: ${hashedToken.substring(0, 10)}...`);
+        }
         return next(new AppError('Invalid or expired magic link', 401));
     }
 
@@ -114,14 +129,14 @@ const verifyMagicLink = catchAsync(async (req, res, next) => {
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax', // Changed from 'strict' to allow magic link authentication
         maxAge: 15 * 60 * 1000 // 15 minutes
     });
 
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax', // Changed from 'strict' to allow magic link authentication
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
@@ -168,7 +183,7 @@ const refreshAccessToken = catchAsync(async (req, res, next) => {
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax', // Changed from 'strict' to allow magic link authentication
         maxAge: 15 * 60 * 1000 // 15 minutes
     });
 
