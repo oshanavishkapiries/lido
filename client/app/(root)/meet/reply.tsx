@@ -2,16 +2,22 @@ import React from "react";
 import { motion } from "framer-motion";
 
 interface ReplyElementProps {
-  message: string;
+  content: string;
   timestamp: string;
-  username: string;
+  senderName: string;
 }
 
 const ReplyElement: React.FC<ReplyElementProps> = ({
-  message,
+  content,
   timestamp,
-  username,
+  senderName,
 }) => {
+  // Format timestamp
+  const formattedTime = new Date(timestamp).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -27,19 +33,20 @@ const ReplyElement: React.FC<ReplyElementProps> = ({
       >
         <div className="flex items-center gap-3 mb-2">
           <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white text-lg font-bold">
-            {username.charAt(0).toUpperCase()}
+            {senderName.charAt(0).toUpperCase()}
           </div>
           <div className="flex items-center gap-2">
             <span className="font-medium text-gray-800 dark:text-gray-200">
-              {username}
+              {senderName}
             </span>
-            <span className="text-sm text-gray-500">{timestamp}</span>
+            <span className="text-sm text-gray-500">{formattedTime}</span>
           </div>
         </div>
-        <p className="text-gray-700 dark:text-gray-300 ml-11">{message}</p>
+        <p className="text-gray-700 dark:text-gray-300 ml-11">{content}</p>
       </motion.div>
     </motion.div>
   );
 };
 
 export default ReplyElement;
+

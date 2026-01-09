@@ -16,6 +16,7 @@ import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import createSession from "@/api/createSession";
 import { toast } from "sonner";
+import { useUserStore } from "@/store/useUserStore";
 
 export default function CreateMeet({
   children,
@@ -24,9 +25,11 @@ export default function CreateMeet({
 }) {
   const id = useId();
   const router = useRouter();
+  const { userName, setUserName } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
+    sessionName: "",
+    hostName: userName || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +37,10 @@ export default function CreateMeet({
     setIsLoading(true);
 
     try {
-      const response = await createSession(formData.name);
+      // Save host name to localStorage
+      setUserName(formData.hostName);
+
+      const response = await createSession(formData.sessionName, formData.hostName);
 
       if (response.status !== "success") {
         toast.error("Failed to create session");
@@ -46,6 +52,7 @@ export default function CreateMeet({
       router.push(`/meet/${sessionId}`);
     } catch (error) {
       console.error("Error creating meeting:", error);
+      toast.error("Failed to create session");
     } finally {
       setIsLoading(false);
     }
@@ -83,14 +90,27 @@ export default function CreateMeet({
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="*:not-first:mt-2">
-              <Label htmlFor={`${id}-name`}>Session name</Label>
+              <Label htmlFor={`${id}-sessionName`}>Session name</Label>
               <Input
-                id={`${id}-name`}
-                name="name"
+                id={`${id}-sessionName`}
+                name="sessionName"
                 placeholder="Enter session name"
                 type="text"
                 required
-                value={formData.name}
+                value={formData.sessionName}
+                onChange={handleChange}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="*:not-first:mt-2">
+              <Label htmlFor={`${id}-hostName`}>Your name</Label>
+              <Input
+                id={`${id}-hostName`}
+                name="hostName"
+                placeholder="Enter your name"
+                type="text"
+                required
+                value={formData.hostName}
                 onChange={handleChange}
                 disabled={isLoading}
               />
@@ -108,3 +128,4 @@ export default function CreateMeet({
     </Dialog>
   );
 }
+

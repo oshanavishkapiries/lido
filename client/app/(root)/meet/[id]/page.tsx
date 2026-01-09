@@ -5,57 +5,151 @@ import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import MassegeInput from "../massegeInput";
 import ReplyElement from "../reply";
 import { useMessageStore } from "@/store/useMessage";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import CancelMeeting from "../CancelMeeting";
 import { getSessionById } from "@/api/getSessionById";
 import useSession from "@/store/useSession";
-import { useRouter } from "next/navigation";
+import { useUserStore } from "@/store/useUserStore";
+import { useSessionSocket } from "@/hooks/useSessionSocket";
+import { useParticipantStore } from "@/store/useParticipantStore";
+
 const MeetPage = () => {
   const params = useParams();
   const meetingId = params.id as string;
+  const router = useRouter();
+
   const { getSession, setSession } = useSession();
   const session = getSession(meetingId);
-  const router = useRouter();
-  const messages = useMessageStore((state) => state.messages);
 
+  const { userName, setUserName } = useUserStore();
+  const messages = useMessageStore((state) => state.messages);
+  const participants = useParticipantStore((state) => state.participants);
+
+  const [showNameDialog, setShowNameDialog] = useState(false);
+  const [tempName, setTempName] = useState("");
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+
+  // Socket.io integration
+  const { sendMessage, sendTyping, sendStopTyping, isConnected } = useSessionSocket({
+    sessionId: meetingId,
+    onJoined: () => {
+      setShowNameDialog(false);
+    },
+  });
+
+  // Fetch session details
   useEffect(() => {
     const fetchSession = async () => {
-      const sessionData = await getSessionById(meetingId);
-      if (sessionData.status !== "success" || !sessionData.data.isActive) {
-        toast.error("Session not found");
+      try {
+        const sessionData = await getSessionById(meetingId);
+        if (sessionData.status !== "success" || !sessionData.data.isActive) {
+          toast.error("Session not found or inactive");
+          router.push("/");
+          return;
+        }
+        setSession(sessionData.data);
+      } catch (error) {
+        console.error("Error fetching session:", error);
+        toast.error("Failed to load session");
         router.push("/");
-        return;
+      } finally {
+        setIsLoadingSession(false);
       }
-      setSession(sessionData.data);
     };
     fetchSession();
   }, [meetingId, setSession, router]);
+
+  // Check if user has a name, if not show dialog
+  useEffect(() => {
+    if (!isLoadingSession && !userName) {
+      setShowNameDialog(true);
+    }
+  }, [userName, isLoadingSession]);
+
+  const handleNameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (tempName.trim()) {
+      setUserName(tempName.trim());
+      setShowNameDialog(false);
+    }
+  };
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(meetingId);
     toast.success("Meeting ID copied to clipboard!");
   };
 
+  if (isLoadingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading session...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col w-full">
+      {/* User Name Dialog */}
+      <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
+        <DialogContent className="bg-background">
+          <DialogHeader>
+            <DialogTitle>Enter Your Name</DialogTitle>
+            <DialogDescription>
+              Please enter your name to join the session
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleNameSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="userName">Your Name</Label>
+              <Input
+                id="userName"
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                placeholder="Enter your name"
+                required
+                autoFocus
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              Join Session
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <header
         className={`p-4 flex justify-between items-center w-full sticky top-0 z-50 border-b bg-background`}
       >
         <div className="w-full max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold">LIDO.</h1>
+            {!isConnected && (
+              <span className="text-xs text-yellow-500">Connecting...</span>
+            )}
           </div>
 
           <div className="hidden md:flex items-center gap-4">
@@ -75,6 +169,9 @@ const MeetPage = () => {
               >
                 <Copy className="h-4 w-4" />
               </Button>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {participants.length} participant{participants.length !== 1 ? 's' : ''}
             </div>
           </div>
 
@@ -130,6 +227,7 @@ const MeetPage = () => {
                 width={100}
                 height={100}
               />
+              <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
             </div>
           ) : (
             <div className="flex flex-col-reverse gap-2">
@@ -141,9 +239,9 @@ const MeetPage = () => {
                   transition={{ duration: 0.3 }}
                 >
                   <ReplyElement
-                    message={msg.message}
+                    content={msg.content}
                     timestamp={msg.timestamp}
-                    username={msg.username}
+                    senderName={msg.senderName}
                   />
                 </motion.div>
               ))}
@@ -154,7 +252,12 @@ const MeetPage = () => {
 
       <div className="w-full fixed bottom-0 left-0 right-0 backdrop-blur-sm">
         <div className="w-full h-auto max-w-4xl mx-auto p-3">
-          <MassegeInput />
+          <MassegeInput
+            sendMessage={sendMessage}
+            sendTyping={sendTyping}
+            sendStopTyping={sendStopTyping}
+            isConnected={isConnected}
+          />
         </div>
       </div>
 
@@ -164,3 +267,4 @@ const MeetPage = () => {
 };
 
 export default MeetPage;
+

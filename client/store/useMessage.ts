@@ -1,43 +1,63 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 export interface Message {
   id: string;
-  message: string;
+  sessionId: string;
+  senderName: string;
+  content: string;
+  type: "message" | "question" | "announcement";
+  reactions: Array<{
+    emoji: string;
+    users: string[];
+  }>;
+  upvotes: {
+    count: number;
+    users: string[];
+  };
   timestamp: string;
-  username: string;
 }
 
 interface MessageStore {
   messages: Message[];
   isLoading: boolean;
-  addMessage: (message: string) => Promise<void>;
+  setMessages: (messages: Message[]) => void;
+  addMessage: (message: Message) => void;
+  clearMessages: () => void;
+  updateMessageReactions: (messageId: string, reactions: any[]) => void;
+  updateMessageUpvotes: (messageId: string, upvotes: any) => void;
 }
 
 export const useMessageStore = create<MessageStore>((set) => ({
   messages: [],
   isLoading: false,
 
-  addMessage: async (message: string) => {
-    set({ isLoading: true });
-    
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newMessage: Message = {
-        id: Math.random().toString(36).substring(7),
-        message,
-        timestamp: new Date().toLocaleString(),
-        username: "John Doe" // In real app, get from auth context
-      };
+  setMessages: (messages) => {
+    set({ messages });
+  },
 
-      set((state) => ({
-        messages: [...state.messages, newMessage],
-        isLoading: false
-      }));
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      set({ isLoading: false });
-    }
-  }
-})); 
+  addMessage: (message) => {
+    set((state) => ({
+      messages: [message, ...state.messages], // Add to beginning for reverse chronological
+    }));
+  },
+
+  clearMessages: () => {
+    set({ messages: [] });
+  },
+
+  updateMessageReactions: (messageId, reactions) => {
+    set((state) => ({
+      messages: state.messages.map((msg) =>
+        msg.id === messageId ? { ...msg, reactions } : msg
+      ),
+    }));
+  },
+
+  updateMessageUpvotes: (messageId, upvotes) => {
+    set((state) => ({
+      messages: state.messages.map((msg) =>
+        msg.id === messageId ? { ...msg, upvotes } : msg
+      ),
+    }));
+  },
+}));
