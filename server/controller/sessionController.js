@@ -1,20 +1,30 @@
 const catchAsync = require("../utils/catchAsync");
 const { sendResponse, sendError } = require("../utils/responseHandler");
 const sessionService = require("../services/sessionService");
+const AppError = require("../utils/AppError");
 
+/**
+ * Create Session (Requires Authentication)
+ * POST /api/v1/session/create
+ */
 const createSession = catchAsync(async (req, res, next) => {
   try {
-    const { sessionName, hostName, settings } = req.body;
+    const { sessionName, settings } = req.body;
+    const user = req.user; // From authenticate middleware
 
     if (!sessionName) {
       return sendError(res, 400, "Session name is required");
     }
 
-    if (!hostName) {
-      return sendError(res, 400, "Host name is required");
-    }
+    // Create session with authenticated user as host
+    const session = await sessionService.createSession(
+      sessionName,
+      user.name, // hostName
+      settings,
+      user.userId, // hostId
+      user.email // hostEmail
+    );
 
-    const session = await sessionService.createSession(sessionName, hostName, settings);
     sendResponse(
       res,
       201,
@@ -31,6 +41,10 @@ const createSession = catchAsync(async (req, res, next) => {
   }
 });
 
+/**
+ * Get Session By ID (Public)
+ * GET /api/v1/session/:sessionId
+ */
 const getSessionById = catchAsync(async (req, res, next) => {
   try {
     const { sessionId } = req.params;
@@ -46,9 +60,27 @@ const getSessionById = catchAsync(async (req, res, next) => {
   }
 });
 
+/**
+ * End Session (Host Only)
+ * DELETE /api/v1/session/:sessionId
+ */
 const endSession = catchAsync(async (req, res, next) => {
   try {
     const { sessionId } = req.params;
+    const user = req.user;
+
+    // Get session to verify host
+    const session = await sessionService.getSessionById(sessionId);
+
+    if (!session) {
+      return sendError(res, 404, "Session not found");
+    }
+
+    // Check if user is the host
+    if (session.hostId.toString() !== user.userId.toString()) {
+      return sendError(res, 403, "Only the host can end the session");
+    }
+
     await sessionService.endSession(sessionId);
     sendResponse(res, 200, null, "Session ended successfully");
   } catch (error) {
@@ -56,6 +88,10 @@ const endSession = catchAsync(async (req, res, next) => {
   }
 });
 
+/**
+ * Add Participant (Public - via Socket.io)
+ * This is kept for backward compatibility
+ */
 const addParticipant = catchAsync(async (req, res, next) => {
   try {
     const { sessionId } = req.params;
@@ -75,13 +111,30 @@ const addParticipant = catchAsync(async (req, res, next) => {
   }
 });
 
+/**
+ * Remove Participant (Host Only)
+ * DELETE /api/v1/session/:sessionId/participants
+ */
 const removeParticipant = catchAsync(async (req, res, next) => {
   try {
     const { sessionId } = req.params;
     const { participantName } = req.body;
+    const user = req.user;
 
     if (!participantName) {
       return sendError(res, 400, "Participant name is required");
+    }
+
+    // Get session to verify host
+    const session = await sessionService.getSessionById(sessionId);
+
+    if (!session) {
+      return sendError(res, 404, "Session not found");
+    }
+
+    // Check if user is the host
+    if (session.hostId.toString() !== user.userId.toString()) {
+      return sendError(res, 403, "Only the host can remove participants");
     }
 
     await sessionService.removeParticipant(sessionId, participantName);
@@ -91,6 +144,10 @@ const removeParticipant = catchAsync(async (req, res, next) => {
   }
 });
 
+/**
+ * Get Participants (Public)
+ * GET /api/v1/session/:sessionId/participants
+ */
 const getParticipants = catchAsync(async (req, res, next) => {
   try {
     const { sessionId } = req.params;
@@ -101,17 +158,34 @@ const getParticipants = catchAsync(async (req, res, next) => {
   }
 });
 
+/**
+ * Update Settings (Host Only)
+ * PUT /api/v1/session/:sessionId/settings
+ */
 const updateSettings = catchAsync(async (req, res, next) => {
   try {
     const { sessionId } = req.params;
     const { settings } = req.body;
+    const user = req.user;
 
     if (!settings) {
       return sendError(res, 400, "Settings are required");
     }
 
-    const session = await sessionService.updateSessionSettings(sessionId, settings);
-    sendResponse(res, 200, session.settings, "Settings updated successfully");
+    // Get session to verify host
+    const session = await sessionService.getSessionById(sessionId);
+
+    if (!session) {
+      return sendError(res, 404, "Session not found");
+    }
+
+    // Check if user is the host
+    if (session.hostId.toString() !== user.userId.toString()) {
+      return sendError(res, 403, "Only the host can update settings");
+    }
+
+    const updatedSession = await sessionService.updateSessionSettings(sessionId, settings);
+    sendResponse(res, 200, updatedSession.settings, "Settings updated successfully");
   } catch (error) {
     sendError(res, 500, error.message);
   }
@@ -126,4 +200,3 @@ module.exports = {
   getParticipants,
   updateSettings
 };
-

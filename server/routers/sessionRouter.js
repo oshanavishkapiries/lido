@@ -8,22 +8,33 @@ const {
   getParticipants,
   updateSettings
 } = require("../controller/sessionController");
+const { authenticate, authorizeHost } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/create", createSession);
+/**
+ * Session Routes
+ */
 
+// Create session (requires authentication)
+router.post("/create", authenticate, createSession);
+
+// Get session by ID (public)
 router.get("/:sessionId", getSessionById);
 
-router.put("/:sessionId/end", endSession);
+// End session (requires authentication + host authorization)
+router.delete("/:sessionId", authenticate, endSession);
 
+// Add participant (public - used by Socket.io)
 router.post("/:sessionId/join", addParticipant);
 
-router.post("/:sessionId/leave", removeParticipant);
+// Remove participant (requires authentication + host authorization)
+router.delete("/:sessionId/participants", authenticate, removeParticipant);
 
+// Get participants (public)
 router.get("/:sessionId/participants", getParticipants);
 
-router.put("/:sessionId/settings", updateSettings);
+// Update settings (requires authentication + host authorization)
+router.put("/:sessionId/settings", authenticate, updateSettings);
 
 module.exports = router;
-

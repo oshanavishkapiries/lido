@@ -2,7 +2,7 @@ const { Session } = require("../models/MessageModel");
 const generateUniqueId = require("../utils/generateId");
 
 class SessionService {
-  async createSession(sessionName, hostName, settings = {}) {
+  async createSession(sessionName, hostName, settings = {}, hostId = null, hostEmail = null) {
     const sessionId = generateUniqueId();
 
     const defaultSettings = {
@@ -18,9 +18,13 @@ class SessionService {
       sessionName,
       sessionId,
       hostName,
+      hostId, // NEW: User ID of host
+      hostEmail, // NEW: Email of host
       settings: defaultSettings,
       participants: [{
+        userId: hostId, // NEW: Link participant to user
         name: hostName,
+        email: hostEmail, // NEW: Add email
         joinedAt: new Date(),
         isActive: true,
         lastSeen: new Date()
