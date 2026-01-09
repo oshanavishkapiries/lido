@@ -34,17 +34,6 @@ sessionSchema.index({ isActive: 1 });
 
 const Session = mongoose.model('Session', sessionSchema);
 
-// User Schema (kept for backward compatibility, but participants are now in Session)
-const userSchema = new Schema({
-  sessionId: { type: String, required: true, ref: 'Session' },
-  userName: { type: String, required: true },
-  joinedAt: { type: Date, default: Date.now }
-});
-
-userSchema.index({ sessionId: 1 });
-
-const User = mongoose.model('User', userSchema);
-
 // Message Schema
 const messageSchema = new Schema({
   sessionId: { type: String, required: true, ref: 'Session' },
@@ -100,4 +89,4 @@ pollSchema.index({ expiresAt: 1 });
 
 const Poll = mongoose.model('Poll', pollSchema);
 
-module.exports = { Session, User, Message, Poll };
+module.exports = { Session, Message, Poll };
