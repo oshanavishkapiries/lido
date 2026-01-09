@@ -98,18 +98,19 @@ const MeetPage = () => {
   }, []);
 
   // Auto-scroll to bottom when new message arrives
+  // Note: With flex-col-reverse, scrollTop: 0 is actually the bottom (newest messages)
   useEffect(() => {
     if (containerRef.current && messages.length > 0) {
       const container = containerRef.current;
 
-      // Always scroll to bottom when new message arrives
-      // Use setTimeout to ensure DOM has updated
-      setTimeout(() => {
+      // Use requestAnimationFrame to ensure DOM has updated
+      requestAnimationFrame(() => {
+        // For flex-col-reverse, scroll to 0 to show newest messages
         container.scrollTo({
-          top: container.scrollHeight,
+          top: 0,
           behavior: 'smooth'
         });
-      }, 100);
+      });
     }
   }, [messages.length]); // Trigger when message count changes
 
