@@ -21,7 +21,7 @@ export default function ProfileDropdown() {
 
     const handleLogout = async () => {
         await logout();
-        toast.success('Logged out successfully');
+        // toast.success('Logged out successfully');
     };
 
     if (!isAuthenticated || !user) {

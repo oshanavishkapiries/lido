@@ -30,7 +30,7 @@ export const createSocketActions = (
         userName,
         sessionId,
       });
-      toast.error("Cannot send message: Not connected");
+      // toast.error("Cannot send message: Not connected");
       return;
     }
 

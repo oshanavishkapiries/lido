@@ -36,7 +36,7 @@ export default function CreateMeet({
 
     // Check if user is authenticated
     if (!isAuthenticated || !user) {
-      toast.error("Please login to create a session");
+      // toast.error("Please login to create a session");
       router.push("/login");
       return;
     }
@@ -48,7 +48,7 @@ export default function CreateMeet({
       const response = await createSession(formData.sessionName, user.name);
 
       if (response.status !== "success") {
-        toast.error("Failed to create session");
+        // toast.error("Failed to create session");
         return;
       }
 
@@ -57,7 +57,7 @@ export default function CreateMeet({
       router.push(`/meet/${sessionId}`);
     } catch (error) {
       console.error("Error creating meeting:", error);
-      toast.error("Failed to create session");
+      // toast.error("Failed to create session");
     } finally {
       setIsLoading(false);
     }

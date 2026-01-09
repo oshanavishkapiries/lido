@@ -29,20 +29,20 @@ function ProfileContent() {
             });
 
             if (response.ok) {
-                toast.success('Profile updated successfully');
+                // toast.success('Profile updated successfully');
                 setIsEditing(false);
                 window.location.reload(); // Refresh to get updated user data
             } else {
-                toast.error('Failed to update profile');
+                // toast.error('Failed to update profile');
             }
         } catch (error) {
-            toast.error('Failed to update profile');
+            // toast.error('Failed to update profile');
         }
     };
 
     const handleLogout = async () => {
         await logout();
-        toast.success('Logged out successfully');
+        // toast.success('Logged out successfully');
     };
 
     return (

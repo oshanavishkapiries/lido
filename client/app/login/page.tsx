@@ -24,14 +24,14 @@ export default function LoginPage() {
         e.preventDefault();
 
         if (!email) {
-            toast.error('Please enter your email');
+            // toast.error('Please enter your email');
             return;
         }
 
         // Basic email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            toast.error('Please enter a valid email address');
+            // toast.error('Please enter a valid email address');
             return;
         }
 
@@ -40,9 +40,9 @@ export default function LoginPage() {
         try {
             await login(email, name || undefined);
             setEmailSent(true);
-            toast.success('Magic link sent! Check your email.');
+            // toast.success('Magic link sent! Check your email.');
         } catch (error: any) {
-            toast.error(error.message || 'Failed to send magic link');
+            // toast.error(error.message || 'Failed to send magic link');
         } finally {
             setIsLoading(false);
         }

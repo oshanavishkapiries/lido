@@ -77,14 +77,14 @@ export const createSocketEventHandlers = (
     handleParticipantJoined: (data: any) => {
       console.log("👋 Participant joined:", data.userName);
       setParticipants(data.participants);
-      toast.info(`${data.userName} joined the session`);
+      // toast.info(`${data.userName} joined the session`);
     },
 
     // Participant left
     handleParticipantLeft: (data: any) => {
       console.log("👋 Participant left:", data.userName);
       setParticipants(data.participants);
-      toast.info(`${data.userName} left the session`);
+      // toast.info(`${data.userName} left the session`);
     },
 
     // Typing indicators
@@ -113,7 +113,7 @@ export const createSocketEventHandlers = (
     // Error handling
     handleError: (error: { message: string }) => {
       console.error("❌ Socket error:", error);
-      toast.error(error.message);
+      // toast.error(error.message);
     },
   };
 };

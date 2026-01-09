@@ -73,14 +73,14 @@ const MeetPage = () => {
       try {
         const sessionData = await getSessionById(meetingId);
         if (sessionData.status !== "success" || !sessionData.data.isActive) {
-          toast.error("Session not found or inactive");
+          // toast.error("Session not found or inactive");
           router.push("/");
           return;
         }
         setSession(sessionData.data);
       } catch (error) {
         console.error("Error fetching session:", error);
-        toast.error("Failed to load session");
+        // toast.error("Failed to load session");
         router.push("/");
       } finally {
         setIsLoadingSession(false);
@@ -135,7 +135,7 @@ const MeetPage = () => {
   const handleCopyId = () => {
     const shareLink = `${window.location.origin}/meet/${meetingId}`;
     navigator.clipboard.writeText(shareLink);
-    toast.success("Meeting link copied to clipboard!");
+    // toast.success("Meeting link copied to clipboard!");
   };
 
   if (isLoadingSession) {
