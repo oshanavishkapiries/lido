@@ -33,6 +33,7 @@ import useSession from "@/store/useSession";
 import { useUserStore } from "@/store/useUserStore";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import { useParticipantStore } from "@/store/useParticipantStore";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 const MeetPage = () => {
   const params = useParams();
@@ -44,6 +45,8 @@ const MeetPage = () => {
 
   const { userName, setUserName } = useUserStore();
   const messages = useMessageStore((state) => state.messages);
+  const isLoadingMessages = useMessageStore((state) => state.isLoading);
+  const hasMoreMessages = useMessageStore((state) => state.hasMore);
   const participants = useParticipantStore((state) => state.participants);
 
   const [showNameDialog, setShowNameDialog] = useState(false);
@@ -56,6 +59,12 @@ const MeetPage = () => {
     onJoined: () => {
       setShowNameDialog(false);
     },
+  });
+
+  // Infinite scroll for loading older messages
+  const { containerRef } = useInfiniteScroll({
+    sessionId: meetingId,
+    enabled: !isLoadingSession && !!userName,
   });
 
   // Fetch session details
@@ -79,6 +88,31 @@ const MeetPage = () => {
     };
     fetchSession();
   }, [meetingId, setSession, router]);
+
+  // Clear messages when leaving session
+  useEffect(() => {
+    const clearMessages = useMessageStore.getState().clearMessages;
+    return () => {
+      clearMessages();
+    };
+  }, []);
+
+  // Auto-scroll to bottom when new message arrives
+  useEffect(() => {
+    if (containerRef.current && messages.length > 0) {
+      // Only auto-scroll if user is near the bottom (within 100px)
+      const container = containerRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+
+      if (isNearBottom) {
+        // Smooth scroll to bottom
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [messages.length]); // Trigger when message count changes
 
   // Check if user has a name, if not show dialog
   useEffect(() => {
@@ -216,8 +250,18 @@ const MeetPage = () => {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto pb-[100px]">
+      <main ref={containerRef} className="flex-1 overflow-y-auto pb-[100px]">
         <div className="w-full h-auto max-w-3xl mx-auto p-3 flex flex-col">
+          {/* Loading indicator for older messages */}
+          {isLoadingMessages && hasMoreMessages && messages.length > 0 && (
+            <div className="flex justify-center py-4">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <span className="text-sm">Loading older messages...</span>
+              </div>
+            </div>
+          )}
+
           {messages.length === 0 ? (
             <div className="w-full h-[calc(100vh-200px)] flex flex-col gap-4 items-center justify-center">
               <Image
