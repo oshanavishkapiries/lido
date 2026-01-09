@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SocketProvider } from "@/contexts/SocketContext";
+import { AuthProvider } from "@/contexts/AuthContext"; // NEW
+import { Toaster } from "sonner"; // NEW
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,9 +31,12 @@ export default function RootLayout({
           disableTransitionOnChange
           storageKey="lido-theme"
         >
-          <SocketProvider>
-            {children}
-          </SocketProvider>
+          <AuthProvider>
+            <SocketProvider>
+              {children}
+              <Toaster position="top-right" />
+            </SocketProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

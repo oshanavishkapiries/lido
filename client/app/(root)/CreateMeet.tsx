@@ -16,7 +16,7 @@ import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import createSession from "@/api/createSession";
 import { toast } from "sonner";
-import { useUserStore } from "@/store/useUserStore";
+import { useAuth } from "@/contexts/AuthContext"; // NEW
 
 export default function CreateMeet({
   children,
@@ -25,22 +25,27 @@ export default function CreateMeet({
 }) {
   const id = useId();
   const router = useRouter();
-  const { userName, setUserName } = useUserStore();
+  const { user, isAuthenticated } = useAuth(); // NEW
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     sessionName: "",
-    hostName: userName || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if user is authenticated
+    if (!isAuthenticated || !user) {
+      toast.error("Please login to create a session");
+      router.push("/login");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Save host name to localStorage
-      setUserName(formData.hostName);
-
-      const response = await createSession(formData.sessionName, formData.hostName);
+      // User is authenticated, use their name from auth
+      const response = await createSession(formData.sessionName, user.name);
 
       if (response.status !== "success") {
         toast.error("Failed to create session");
@@ -82,7 +87,11 @@ export default function CreateMeet({
               Create a new session
             </DialogTitle>
             <DialogDescription className="sm:text-center">
-              Enter the details below to create a new session.
+              {isAuthenticated ? (
+                `Creating as ${user?.name}`
+              ) : (
+                "Please login to create a session"
+              )}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -99,24 +108,11 @@ export default function CreateMeet({
                 required
                 value={formData.sessionName}
                 onChange={handleChange}
-                disabled={isLoading}
-              />
-            </div>
-            <div className="*:not-first:mt-2">
-              <Label htmlFor={`${id}-hostName`}>Your name</Label>
-              <Input
-                id={`${id}-hostName`}
-                name="hostName"
-                placeholder="Enter your name"
-                type="text"
-                required
-                value={formData.hostName}
-                onChange={handleChange}
-                disabled={isLoading}
+                disabled={isLoading || !isAuthenticated}
               />
             </div>
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading || !isAuthenticated}>
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
