@@ -100,17 +100,16 @@ const MeetPage = () => {
   // Auto-scroll to bottom when new message arrives
   useEffect(() => {
     if (containerRef.current && messages.length > 0) {
-      // Only auto-scroll if user is near the bottom (within 100px)
       const container = containerRef.current;
-      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
 
-      if (isNearBottom) {
-        // Smooth scroll to bottom
+      // Always scroll to bottom when new message arrives
+      // Use setTimeout to ensure DOM has updated
+      setTimeout(() => {
         container.scrollTo({
           top: container.scrollHeight,
           behavior: 'smooth'
         });
-      }
+      }, 100);
     }
   }, [messages.length]); // Trigger when message count changes
 
@@ -275,9 +274,9 @@ const MeetPage = () => {
             </div>
           ) : (
             <div className="flex flex-col-reverse gap-2">
-              {messages.map((msg) => (
+              {messages.map((msg, index) => (
                 <motion.div
-                  key={msg.id}
+                  key={msg.id || `message-${index}`}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
