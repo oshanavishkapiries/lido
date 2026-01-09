@@ -45,7 +45,7 @@ export const useMessageStore = create<MessageStore>((set) => ({
 
   addMessage: (message) => {
     set((state) => ({
-      messages: [message, ...state.messages], // Add to beginning for reverse chronological
+      messages: [...state.messages, message], // Add to end for chronological order
     }));
   },
 

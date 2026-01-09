@@ -59,8 +59,17 @@ export const createSocketEventHandlers = (
 
     // New message received
     handleNewMessage: (message: Message) => {
-      console.log("📨 New message:", message);
+      console.log("📨 New message received:", message);
+      console.log(
+        "📨 Message store before add:",
+        useMessageStore.getState().messages.length
+      );
       addMessage(message);
+      console.log(
+        "📨 Message store after add:",
+        useMessageStore.getState().messages.length
+      );
+      console.log("📨 All messages:", useMessageStore.getState().messages);
     },
 
     // Participant joined

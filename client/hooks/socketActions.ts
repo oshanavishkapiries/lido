@@ -16,11 +16,25 @@ export const createSocketActions = (
     content: string,
     type: "message" | "question" | "announcement" = "message"
   ) => {
+    console.log("📤 Attempting to send message:", {
+      content,
+      type,
+      socket: !!socket,
+      userName,
+      sessionId,
+    });
+
     if (!socket || !userName || !sessionId) {
+      console.error("❌ Cannot send message:", {
+        socket: !!socket,
+        userName,
+        sessionId,
+      });
       toast.error("Cannot send message: Not connected");
       return;
     }
 
+    console.log("✅ Emitting send-message event");
     socket.emit("send-message", {
       sessionId,
       userName,

@@ -2,10 +2,10 @@
 import AvatarComponent from "@/components/AvatarComponent";
 import { ModeToggle } from "@/components/ModeToggle";
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "sonner";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +33,7 @@ import useSession from "@/store/useSession";
 import { useUserStore } from "@/store/useUserStore";
 import { useSessionSocket } from "@/hooks/useSessionSocket";
 import { useParticipantStore } from "@/store/useParticipantStore";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { getMessages } from "@/api/getMessages";
 
 const MeetPage = () => {
   const params = useParams();
@@ -53,18 +53,17 @@ const MeetPage = () => {
   const [tempName, setTempName] = useState("");
   const [isLoadingSession, setIsLoadingSession] = useState(true);
 
+  // Refs for scroll management
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const previousMessageCountRef = useRef(0);
+
   // Socket.io integration
   const { sendMessage, sendTyping, sendStopTyping, isConnected } = useSessionSocket({
     sessionId: meetingId,
     onJoined: () => {
       setShowNameDialog(false);
     },
-  });
-
-  // Infinite scroll for loading older messages
-  const { containerRef } = useInfiniteScroll({
-    sessionId: meetingId,
-    enabled: !isLoadingSession && !!userName,
   });
 
   // Fetch session details
@@ -98,21 +97,20 @@ const MeetPage = () => {
   }, []);
 
   // Auto-scroll to bottom when new message arrives
-  // Note: With flex-col-reverse, scrollTop: 0 is actually the bottom (newest messages)
   useEffect(() => {
-    if (containerRef.current && messages.length > 0) {
-      const container = containerRef.current;
-
-      // Use requestAnimationFrame to ensure DOM has updated
-      requestAnimationFrame(() => {
-        // For flex-col-reverse, scroll to 0 to show newest messages
-        container.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      });
+    // Only scroll if a new message was added (not on initial load or load more)
+    if (messages.length > previousMessageCountRef.current) {
+      scrollToBottom();
     }
-  }, [messages.length]); // Trigger when message count changes
+    previousMessageCountRef.current = messages.length;
+  }, [messages]);
+
+  // Scroll to bottom on initial load
+  useEffect(() => {
+    if (messages.length > 0 && previousMessageCountRef.current === 0) {
+      scrollToBottom('auto');
+    }
+  }, [messages.length]);
 
   // Check if user has a name, if not show dialog
   useEffect(() => {
@@ -120,6 +118,10 @@ const MeetPage = () => {
       setShowNameDialog(true);
     }
   }, [userName, isLoadingSession]);
+
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  };
 
   const handleNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,20 +252,25 @@ const MeetPage = () => {
         </div>
       </header>
 
-      <main ref={containerRef} className="flex-1 overflow-y-auto pb-[100px]">
-        <div className="w-full h-auto max-w-3xl mx-auto p-3 flex flex-col">
+      {/* Messages Container */}
+      <main
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto"
+        style={{ paddingBottom: '100px' }}
+      >
+        <div className="w-full max-w-3xl mx-auto p-4">
           {/* Loading indicator for older messages */}
           {isLoadingMessages && hasMoreMessages && messages.length > 0 && (
             <div className="flex justify-center py-4">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <Loader2 className="h-4 w-4 animate-spin" />
                 <span className="text-sm">Loading older messages...</span>
               </div>
             </div>
           )}
 
           {messages.length === 0 ? (
-            <div className="w-full h-[calc(100vh-200px)] flex flex-col gap-4 items-center justify-center">
+            <div className="flex flex-col gap-4 items-center justify-center h-[calc(100vh-300px)]">
               <Image
                 src="/hero/hero01.svg"
                 className="w-1/4 aspect-square opacity-50"
@@ -274,13 +281,13 @@ const MeetPage = () => {
               <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
             </div>
           ) : (
-            <div className="flex flex-col-reverse gap-2">
+            <div className="flex flex-col gap-3">
               {messages.map((msg, index) => (
                 <motion.div
                   key={msg.id || `message-${index}`}
-                  initial={{ opacity: 0, y: -20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <ReplyElement
                     content={msg.content}
@@ -289,13 +296,16 @@ const MeetPage = () => {
                   />
                 </motion.div>
               ))}
+              {/* Invisible element to scroll to */}
+              <div ref={messagesEndRef} />
             </div>
           )}
         </div>
       </main>
 
-      <div className="w-full fixed bottom-0 left-0 right-0 backdrop-blur-sm">
-        <div className="w-full h-auto max-w-4xl mx-auto p-3">
+      {/* Message Input - Fixed at bottom */}
+      <div className="w-full fixed bottom-0 left-0 right-0 bg-background border-t">
+        <div className="w-full max-w-4xl mx-auto p-3">
           <MassegeInput
             sendMessage={sendMessage}
             sendTyping={sendTyping}
@@ -311,4 +321,3 @@ const MeetPage = () => {
 };
 
 export default MeetPage;
-
