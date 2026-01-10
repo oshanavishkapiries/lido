@@ -130,14 +130,16 @@ const verifyMagicLink = catchAsync(async (req, res, next) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax', // Changed from 'strict' to allow magic link authentication
-        maxAge: 15 * 60 * 1000 // 15 minutes
+        maxAge: 15 * 60 * 1000, // 15 minutes
+        path: '/' // Ensure cookie is available on all paths
     });
 
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax', // Changed from 'strict' to allow magic link authentication
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        path: '/' // Ensure cookie is available on all paths
     });
 
     logger.info(`User logged in: ${user.email}`);
